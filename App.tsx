@@ -1,5 +1,6 @@
 import { StatusBar } from "expo-status-bar";
 import { StyleSheet, View } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { PaperProvider } from "react-native-paper";
 import { Provider as ReduxProvider } from "react-redux";
 
@@ -9,12 +10,14 @@ import { store } from "@store";
 export default function App() {
   return (
     <ReduxProvider store={store}>
-      <PaperProvider>
-        <View style={styles.container}>
-          <AppRoot />
-          <StatusBar style="auto" />
-        </View>
-      </PaperProvider>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <PaperProvider>
+          <View style={styles.container}>
+            <AppRoot />
+            <StatusBar style="auto" />
+          </View>
+        </PaperProvider>
+      </GestureHandlerRootView>
     </ReduxProvider>
   );
 }

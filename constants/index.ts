@@ -18,3 +18,6 @@ export const MONTHS: {
   { fullMonthName: "November", shortMonthName: "Nov" },
   { fullMonthName: "December", shortMonthName: "Dec" },
 ];
+
+export const DEFAULT_HOURS_WORKED = 7.6;
+export const DEFAULT_HOURLY_RATE = 28.445;

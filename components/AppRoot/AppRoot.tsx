@@ -3,7 +3,7 @@ import { useCallback, useEffect } from "react";
 import { MonthCarousel } from "@components/MonthCarousel";
 import { useAppDispatch, useAppSelector } from "@hooks";
 import { setIsLoading } from "@store";
-import { createDefaultTableSQLString } from "@utils";
+import { createDefaultTableSQLString, dropDefaultTableSQLString } from "@utils";
 
 export const AppRoot = () => {
   const dispatch = useAppDispatch();
@@ -14,6 +14,7 @@ export const AppRoot = () => {
     db.transaction(
       (tx) => {
         tx.executeSql(createDefaultTableSQLString);
+        // tx.executeSql(dropDefaultTableSQLString);
       },
       ({ code, message }) => {
         console.log(code, message);

@@ -9,7 +9,12 @@ import {
   HIGH_DISTINCTION_THRESHOLD,
 } from "@constants";
 import { useAppSelector, useSelectedMonth } from "@hooks";
-import { APP_PADDING, walledGreen, xmasCandy } from "@theme";
+import {
+  APP_PADDING,
+  forbiddenBlackberry,
+  walledGreen,
+  xmasCandy,
+} from "@theme";
 import {
   getMonthName,
   getWeekdaysInAMonth,
@@ -119,6 +124,8 @@ export const MonthSummary = () => {
         }}
       >
         <IconButton
+          containerColor={walledGreen}
+          iconColor={forbiddenBlackberry}
           icon="chevron-left"
           mode="contained"
           onPress={() => {
@@ -151,6 +158,8 @@ export const MonthSummary = () => {
           </Text>
         </Pressable>
         <IconButton
+          containerColor={walledGreen}
+          iconColor={forbiddenBlackberry}
           icon="chevron-right"
           mode="contained"
           onPress={() => {

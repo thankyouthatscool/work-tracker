@@ -754,17 +754,22 @@ export const MonthCarousel = () => {
             </View>
           </Modal>
         </Portal>
-        <Snackbar
-          onDismiss={() => {
-            setIsSnackbarVisible(() => false);
-          }}
-          visible={isSnackbarVisible}
-        >
-          {snackbarMessage}
-        </Snackbar>
+        <Portal>
+          <Snackbar
+            duration={1500}
+            onDismiss={() => {
+              setIsSnackbarVisible(() => false);
+            }}
+            visible={isSnackbarVisible}
+          >
+            {snackbarMessage}
+          </Snackbar>
+        </Portal>
         <MonthSummary />
       </SafeAreaView>
     );
+
+  return <View />;
 };
 
 export const MonthTopInformation = () => {

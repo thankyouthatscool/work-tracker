@@ -13,8 +13,8 @@ export const AppRoot = () => {
   const handleInitialLoad = useCallback(async () => {
     db.transaction(
       (tx) => {
-        tx.executeSql(createDefaultTableSQLString);
         // tx.executeSql(dropDefaultTableSQLString);
+        tx.executeSql(createDefaultTableSQLString);
       },
       ({ code, message }) => {
         console.log(code, message);

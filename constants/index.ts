@@ -21,3 +21,4 @@ export const MONTHS: {
 
 export const DEFAULT_HOURS_WORKED = 7.6;
 export const DEFAULT_HOURLY_RATE = 28.445;
+export const DEFAULT_COMMENT = "DAY DEFAULT";

@@ -42,3 +42,37 @@ export const formatDateString = (date: number) => {
       return `${date}rd`;
   }
 };
+
+export const getWeekdaysInAMonth = (month: number, year: number) => {
+  const { numberOfDays } = getMonthInformation(year, month);
+
+  let weekdays = 0;
+
+  for (let i = 0; i < numberOfDays; i++) {
+    const testDate = new Date(year, month, i + 1);
+
+    if (testDate.getDay() !== 0 && testDate.getDay() !== 6) {
+      weekdays++;
+    }
+  }
+
+  return weekdays;
+};
+
+export const getWeekdaysInAMonthSoFar = (
+  month: number,
+  year: number,
+  date: number
+) => {
+  let weekdays = 0;
+
+  for (let i = 0; i < date; i++) {
+    const testDate = new Date(year, month, i + 1);
+
+    if (testDate.getDay() !== 0 && testDate.getDay() !== 6) {
+      weekdays++;
+    }
+  }
+
+  return weekdays;
+};

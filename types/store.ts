@@ -22,9 +22,18 @@ export type TouchedDateInformation = {
   SELECTED_YEAR: number;
 } | null;
 
+export type DbMonthData = {
+  dayId: string;
+  monthId: string;
+  hoursWorked: number[];
+  hourlyRate: number[];
+  comment: string;
+};
+
 export type AppState = {
   currentDateInformation: CurrentDateInformation;
   databaseInstance: SQLite.WebSQLDatabase;
+  dbMonthData: DbMonthData[];
   isLoading: boolean;
   selectedDateInformation: SelectedDateInformation;
   touchedDateInformation: TouchedDateInformation;

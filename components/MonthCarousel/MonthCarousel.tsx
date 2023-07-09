@@ -1,24 +1,33 @@
+import * as Haptics from "expo-haptics";
 import { useCallback, useEffect, useState } from "react";
 import { Dimensions, Pressable, View } from "react-native";
 import {
   Button,
+  Dialog,
   IconButton,
   Modal,
   Portal,
+  Snackbar,
   Text,
   TextInput,
 } from "react-native-paper";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { MonthSummary } from "@components/MonthSummary";
 import {
   DEFAULT_HOURS_WORKED,
   DEFAULT_HOURLY_RATE,
   TRANSLATION_X_THRESHOLD,
   VELOCITY_X_THRESHOLD,
+  DEFAULT_COMMENT,
 } from "@constants";
 import { useAppDispatch, useAppSelector } from "@hooks";
-import { setSelectedDate, setTouchedDateInformation } from "@store";
+import {
+  setDbMonthData,
+  setSelectedDate,
+  setTouchedDateInformation,
+} from "@store";
 import { APP_PADDING } from "@theme";
 import {
   formatDateString,
@@ -30,13 +39,17 @@ import {
 import {
   BottomButtonWrapper,
   CalendarWrapper,
+  ModalButtonWrapper,
   MonthCarouselWrapper,
 } from "./Styled";
+import { DbMonthData } from "@types";
 
 const { width: WINDOW_WIDTH } = Dimensions.get("window");
 
 export const MonthCarousel = () => {
   const dispatch = useAppDispatch();
+
+  const { dbMonthData } = useAppSelector(({ app }) => app);
 
   const [selectedMonthInformation, setSelectedMonthInformation] = useState<
     ReturnType<typeof getMonthInformation> | undefined
@@ -52,15 +65,12 @@ export const MonthCarousel = () => {
     comment: "",
   });
 
-  const [DBMonthData, setDBMonthData] = useState<
-    {
-      dayId: string;
-      monthId: string;
-      hoursWorked: number[];
-      hourlyRate: number[];
-      comment: string;
-    }[]
-  >([]);
+  // Snackbar state
+  const [isSnackbarVisible, setIsSnackbarVisible] = useState<boolean>(false);
+  const [snackbarMessage, setSnackbarMessage] = useState<string>("");
+
+  // Dialog state
+  const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
 
   const {
     currentDateInformation: {
@@ -170,35 +180,37 @@ export const MonthCarousel = () => {
               comment,
             ],
             () => {
-              setDBMonthData((DBMonthData) => {
-                const targetRecord = DBMonthData.find(
-                  (record) =>
-                    record.dayId ===
-                    `${touchedDateInformation?.SELECTED_DATE}/${touchedDateInformation?.SELECTED_MONTH}/${touchedDateInformation?.SELECTED_YEAR}`
-                );
+              const targetRecord = dbMonthData.find(
+                (record) =>
+                  record.dayId ===
+                  `${touchedDateInformation?.SELECTED_DATE}/${touchedDateInformation?.SELECTED_MONTH}/${touchedDateInformation?.SELECTED_YEAR}`
+              );
 
-                if (!!targetRecord) {
-                  return [
-                    { ...targetRecord, hoursWorked, hourlyRate, comment },
-                    ...DBMonthData.filter(
-                      (record) =>
-                        record.dayId !==
-                        `${touchedDateInformation?.SELECTED_DATE}/${touchedDateInformation?.SELECTED_MONTH}/${touchedDateInformation?.SELECTED_YEAR}`
-                    ),
-                  ];
-                } else {
-                  return [
-                    ...DBMonthData,
-                    {
-                      dayId: `${touchedDateInformation?.SELECTED_DATE}/${touchedDateInformation?.SELECTED_MONTH}/${touchedDateInformation?.SELECTED_YEAR}`,
-                      monthId: `${touchedDateInformation?.SELECTED_MONTH}/${touchedDateInformation?.SELECTED_YEAR}`,
-                      hoursWorked,
-                      hourlyRate,
-                      comment,
-                    },
-                  ];
-                }
-              });
+              let newData: DbMonthData[];
+
+              if (!!targetRecord) {
+                newData = [
+                  { ...targetRecord, hoursWorked, hourlyRate, comment },
+                  ...dbMonthData.filter(
+                    (record) =>
+                      record.dayId !==
+                      `${touchedDateInformation?.SELECTED_DATE}/${touchedDateInformation?.SELECTED_MONTH}/${touchedDateInformation?.SELECTED_YEAR}`
+                  ),
+                ];
+              } else {
+                newData = [
+                  ...dbMonthData,
+                  {
+                    dayId: `${touchedDateInformation?.SELECTED_DATE}/${touchedDateInformation?.SELECTED_MONTH}/${touchedDateInformation?.SELECTED_YEAR}`,
+                    monthId: `${touchedDateInformation?.SELECTED_MONTH}/${touchedDateInformation?.SELECTED_YEAR}`,
+                    hoursWorked,
+                    hourlyRate,
+                    comment,
+                  },
+                ];
+              }
+
+              dispatch(setDbMonthData(newData));
 
               handleCancel();
             }
@@ -215,6 +227,86 @@ export const MonthCarousel = () => {
       touchedDateInformation?.SELECTED_MONTH,
       touchedDateInformation?.SELECTED_YEAR,
     ]
+  );
+
+  const handleInsertDefaults = useCallback(
+    (
+      dayId: string,
+      monthId: string,
+      hoursWorked: number[],
+      hourlyRate: number[],
+      comment: string
+    ) => {
+      db.transaction(
+        (tx) => {
+          tx.executeSql(
+            `
+              INSERT INTO dayTracker (dayId, monthId, hoursWorked, hourlyRate, comment)
+              VALUES (?, ?, ?, ?, ?)
+              ON CONFLICT (dayId) DO UPDATE SET
+                hoursWorked = excluded.hoursWorked,
+                hourlyRate = excluded.hourlyRate,
+                comment = excluded.comment
+            `,
+            [
+              dayId,
+              monthId,
+              JSON.stringify(hoursWorked),
+              JSON.stringify(hourlyRate),
+              comment,
+            ]
+          );
+        },
+        (err) => console.log(err),
+        () => {
+          const targetRecord = dbMonthData.find(
+            (record) => record.dayId === dayId
+          );
+
+          let newData: DbMonthData[];
+
+          if (!!targetRecord) {
+            newData = [
+              { dayId, monthId, hoursWorked, hourlyRate, comment },
+              ...dbMonthData.filter((record) => record.dayId !== dayId),
+            ];
+          } else {
+            newData = [
+              ...dbMonthData,
+              { dayId, monthId, hoursWorked, hourlyRate, comment },
+            ];
+          }
+
+          dispatch(setDbMonthData(newData));
+        }
+      );
+    },
+    [dbMonthData]
+  );
+
+  const handleDeleteRecord = useCallback(
+    (dayId: string) => {
+      db.transaction(
+        (tx) => {
+          tx.executeSql(
+            `
+            DELETE FROM dayTracker
+            WHERE dayId = ?
+          `,
+            [dayId]
+          );
+        },
+        (err) => console.log(err),
+        () => {
+          const newMonthData = dbMonthData.filter(
+            (record) => record.dayId !== dayId
+          );
+
+          dispatch(setDbMonthData(newMonthData));
+        }
+      );
+    },
+    [dbMonthData]
   );
 
   const panGesture = Gesture.Pan().onEnd((e) => {
@@ -263,7 +355,7 @@ export const MonthCarousel = () => {
             comment: string;
           }[];
 
-          setDBMonthData(() => parsedMonthData);
+          dispatch(setDbMonthData(parsedMonthData));
         }
       );
     });
@@ -271,7 +363,7 @@ export const MonthCarousel = () => {
 
   useEffect(() => {
     if (!!touchedDateInformation) {
-      const targetDate = DBMonthData.find(
+      const targetDate = dbMonthData.find(
         (record) =>
           record.dayId ===
           `${touchedDateInformation.SELECTED_DATE}/${touchedDateInformation.SELECTED_MONTH}/${touchedDateInformation.SELECTED_YEAR}`
@@ -291,7 +383,7 @@ export const MonthCarousel = () => {
         }));
       }
     }
-  }, [DBMonthData, touchedDateInformation]);
+  }, [dbMonthData, touchedDateInformation]);
 
   if (!!isLoading)
     return (
@@ -302,7 +394,8 @@ export const MonthCarousel = () => {
 
   if (!!selectedMonthInformation)
     return (
-      <SafeAreaView>
+      <SafeAreaView style={{ flex: 1, justifyContent: "space-between" }}>
+        <MonthTopInformation />
         <GestureDetector gesture={panGesture}>
           <MonthCarouselWrapper>
             <CalendarWrapper>
@@ -335,14 +428,41 @@ export const MonthCarousel = () => {
                         );
                       }
                     }}
-                    onLongPress={() => {
-                      dispatch(setTouchedDateInformation(null));
+                    onLongPress={async () => {
+                      if (
+                        idx - selectedMonthInformation.firstDayIndex >= 0 &&
+                        idx - selectedMonthInformation.firstDayIndex <
+                          selectedMonthInformation.numberOfDays
+                      ) {
+                        await Haptics.impactAsync(
+                          Haptics.ImpactFeedbackStyle.Medium
+                        );
+
+                        setSnackbarMessage(
+                          () =>
+                            `Default values set for ${
+                              idx + 1 - selectedMonthInformation.firstDayIndex
+                            }/${SELECTED_MONTH}/${SELECTED_YEAR}.`
+                        );
+
+                        setIsSnackbarVisible(() => true);
+
+                        handleInsertDefaults(
+                          `${
+                            idx + 1 - selectedMonthInformation.firstDayIndex
+                          }/${SELECTED_MONTH}/${SELECTED_YEAR}`,
+                          `${SELECTED_MONTH}/${SELECTED_YEAR}`,
+                          [DEFAULT_HOURS_WORKED],
+                          [DEFAULT_HOURLY_RATE],
+                          DEFAULT_COMMENT
+                        );
+                      }
                     }}
                   >
                     <View
                       style={{
                         alignItems: "center",
-                        backgroundColor: !!DBMonthData.find(
+                        backgroundColor: !!dbMonthData.find(
                           (record) =>
                             record.dayId ===
                             `${
@@ -351,13 +471,6 @@ export const MonthCarousel = () => {
                         )
                           ? "green"
                           : "white",
-                        // borderColor:
-                        //   idx < selectedMonthInformation.firstDayIndex
-                        //     ? "rgba(1, 1, 1, 0.1)"
-                        //     : idx - selectedMonthInformation.firstDayIndex >=
-                        //       selectedMonthInformation.numberOfDays
-                        //     ? "rgba(1, 1, 1, 0.1)"
-                        //     : "rgba(1, 1, 1, 0.25)",
                         borderColor:
                           `${
                             idx + 1 - selectedMonthInformation.firstDayIndex
@@ -445,7 +558,17 @@ export const MonthCarousel = () => {
                   style={{ flex: 1 }}
                   value={modalData.hoursWorked[0].toString()}
                 />
-                <IconButton icon="check" mode="outlined" onPress={() => {}} />
+                <IconButton
+                  disabled={modalData.hoursWorked[0] === DEFAULT_HOURS_WORKED}
+                  icon="check"
+                  mode="outlined"
+                  onPress={() => {
+                    setModalData((modalData) => ({
+                      ...modalData,
+                      hoursWorked: [DEFAULT_HOURS_WORKED],
+                    }));
+                  }}
+                />
               </View>
               <View style={{ alignItems: "center", flexDirection: "row" }}>
                 <TextInput
@@ -463,7 +586,17 @@ export const MonthCarousel = () => {
                   style={{ flex: 1 }}
                   value={modalData.hourlyRate[0].toString()}
                 />
-                <IconButton icon="check" mode="outlined" onPress={() => {}} />
+                <IconButton
+                  disabled={modalData.hourlyRate[0] === DEFAULT_HOURLY_RATE}
+                  icon="check"
+                  mode="outlined"
+                  onPress={() => {
+                    setModalData((modalData) => ({
+                      ...modalData,
+                      hourlyRate: [DEFAULT_HOURLY_RATE],
+                    }));
+                  }}
+                />
               </View>
               <TextInput
                 label="Comments"
@@ -478,45 +611,110 @@ export const MonthCarousel = () => {
                 }
                 value={modalData.comment}
               />
-              <View
-                style={{
-                  alignItems: "center",
-                  flexDirection: "row",
-                  justifyContent: "flex-end",
-                  marginTop: APP_PADDING / 2.5,
-                }}
-              >
+              <ModalButtonWrapper>
                 <IconButton
+                  disabled={
+                    !dbMonthData.find(
+                      (record) =>
+                        record.dayId ===
+                        `${touchedDateInformation?.SELECTED_DATE}/${touchedDateInformation?.SELECTED_MONTH}/${touchedDateInformation?.SELECTED_YEAR}`
+                    )
+                  }
                   icon="delete"
                   iconColor="red"
                   mode="outlined"
-                  onPress={() => {}}
-                />
-                <Button
-                  mode="outlined"
-                  onPress={handleCancel}
-                  style={{ marginRight: APP_PADDING / 2.5 }}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  mode="contained"
                   onPress={() => {
-                    setDBMonthData((monthData) => monthData);
-
-                    handleInsertData(
-                      modalData.hoursWorked,
-                      modalData.hourlyRate,
-                      modalData.comment
-                    );
+                    setIsDialogOpen(() => true);
                   }}
+                />
+                <View style={{ flexDirection: "row" }}>
+                  <Button
+                    mode="outlined"
+                    onPress={handleCancel}
+                    style={{ marginRight: APP_PADDING / 2.5 }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    mode="contained"
+                    onPress={() => {
+                      handleInsertData(
+                        modalData.hoursWorked,
+                        modalData.hourlyRate,
+                        modalData.comment
+                      );
+                    }}
+                  >
+                    Save
+                  </Button>
+                </View>
+              </ModalButtonWrapper>
+              <Portal>
+                <Dialog
+                  onDismiss={() => {
+                    setIsDialogOpen(() => false);
+                  }}
+                  visible={isDialogOpen}
                 >
-                  Save
-                </Button>
-              </View>
+                  <Dialog.Title>Confirm Delete</Dialog.Title>
+                  <Dialog.Content>
+                    <Text style={{ marginBottom: APP_PADDING }}>
+                      Are you sure you want to delete information for{" "}
+                      {touchedDateInformation?.SELECTED_DATE}/
+                      {touchedDateInformation?.SELECTED_MONTH}/
+                      {touchedDateInformation?.SELECTED_YEAR}?
+                    </Text>
+                    <Text style={{ fontWeight: "bold" }}>
+                      This action cannot be undone!
+                    </Text>
+                  </Dialog.Content>
+                  <Dialog.Actions>
+                    <Button
+                      mode="outlined"
+                      onPress={() => {
+                        setIsDialogOpen(() => false);
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      buttonColor="red"
+                      mode="contained"
+                      onPress={() => {
+                        setIsDialogOpen(() => false);
+
+                        handleDeleteRecord(
+                          `${touchedDateInformation?.SELECTED_DATE}/${touchedDateInformation?.SELECTED_MONTH}/${touchedDateInformation?.SELECTED_YEAR}`
+                        );
+
+                        dispatch(setTouchedDateInformation(null));
+                      }}
+                    >
+                      DELETE
+                    </Button>
+                  </Dialog.Actions>
+                </Dialog>
+              </Portal>
             </View>
           </Modal>
         </Portal>
+        <Snackbar
+          onDismiss={() => {
+            setIsSnackbarVisible(() => false);
+          }}
+          visible={isSnackbarVisible}
+        >
+          {snackbarMessage}
+        </Snackbar>
+        <MonthSummary />
       </SafeAreaView>
     );
+};
+
+export const MonthTopInformation = () => {
+  return (
+    <View>
+      <Text>Month Top Information </Text>
+    </View>
+  );
 };

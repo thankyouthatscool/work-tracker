@@ -35,3 +35,18 @@ export const BottomButtonWrapper: FC<PropsWithChildren> = ({ children }) => {
     </View>
   );
 };
+
+export const ModalButtonWrapper: FC<PropsWithChildren> = ({ children }) => {
+  return (
+    <View
+      style={{
+        alignItems: "center",
+        flexDirection: "row",
+        justifyContent: "space-between",
+        marginTop: APP_PADDING / 2.5,
+      }}
+    >
+      {children}
+    </View>
+  );
+};

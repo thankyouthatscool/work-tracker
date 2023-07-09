@@ -4,8 +4,7 @@
   "main": "node_modules/expo/AppEntry.js",
   "scripts": {
     "start": "dotenv -e .env expo start",
-    "build:android:preview": "yarn eas build -p android --profile preview --no-wait",
-    "bap": "yarn build:android:preview"
+    "build:android:preview": "yarn eas build -p android --profile preview --no-wait"
   },
   "dependencies": {
     "@reduxjs/toolkit": "^1.9.5",

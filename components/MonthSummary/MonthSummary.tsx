@@ -32,10 +32,14 @@ export const MonthSummary = () => {
       0
     )
   );
+
+  // TODO: Selected month information
   const [isSelectedMonthCurrent, setIsSelectedMonthCurrent] = useState(
     `${selectedDateInformation.SELECTED_MONTH}/${selectedDateInformation.SELECTED_YEAR}` ===
       `${currentDateInformation.CURRENT_MONTH}/${currentDateInformation.CURRENT_YEAR}`
   );
+  const [isSelectedMonthPast, setIsSelectedMonthPast] = useState();
+  const [isSelectedMonthFuture, setIsSelectedMonthFuture] = useState();
 
   const NUMBER_OF_WEEKDAYS_IN_THE_MONTH = getWeekdaysInAMonth(
     selectedDateInformation.SELECTED_MONTH,

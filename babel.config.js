@@ -2,7 +2,11 @@ module.exports = function (api) {
   api.cache(true);
 
   return {
-    env: { production: { plugins: ["react-native-paper/babel"] } },
+    env: {
+      production: {
+        plugins: ["react-native-paper/babel"],
+      },
+    },
     plugins: [
       [
         "module-resolver",

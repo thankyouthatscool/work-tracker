@@ -314,6 +314,8 @@ export const MonthCarousel = () => {
       Math.abs(e.translationX) > TRANSLATION_X_THRESHOLD &&
       Math.abs(e.velocityX) > VELOCITY_X_THRESHOLD
     ) {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
       handleSelectedDateChange(e.translationX > 0 ? "prev" : "next");
     }
   });

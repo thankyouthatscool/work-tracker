@@ -3,16 +3,24 @@ import { useEffect, useState } from "react";
 import { Pressable, View } from "react-native";
 import { IconButton, Text } from "react-native-paper";
 
-import { DEFAULT_HOURS_WORKED, DEFAULT_HOURLY_RATE } from "@constants";
+import {
+  DEFAULT_HOURS_WORKED,
+  DEFAULT_HOURLY_RATE,
+  HIGH_DISTINCTION_THRESHOLD,
+} from "@constants";
 import { useAppSelector, useSelectedMonth } from "@hooks";
-import { APP_PADDING } from "@theme";
+import { APP_PADDING, walledGreen, xmasCandy } from "@theme";
 import {
   getMonthName,
   getWeekdaysInAMonth,
   getWeekdaysInAMonthSoFar,
 } from "@utils";
 
-// TODO: Figure out number of working days in a month.
+import {
+  CurrentMonthSummaryWrapper,
+  FutureMonthSummaryWrapper,
+  PastMonthSummaryWrapper,
+} from "./Styled";
 
 export const MonthSummary = () => {
   const { currentDateInformation, dbMonthData, selectedDateInformation } =
@@ -34,12 +42,11 @@ export const MonthSummary = () => {
   );
 
   // TODO: Selected month information
-  const [isSelectedMonthCurrent, setIsSelectedMonthCurrent] = useState(
-    `${selectedDateInformation.SELECTED_MONTH}/${selectedDateInformation.SELECTED_YEAR}` ===
-      `${currentDateInformation.CURRENT_MONTH}/${currentDateInformation.CURRENT_YEAR}`
-  );
-  const [isSelectedMonthPast, setIsSelectedMonthPast] = useState();
-  const [isSelectedMonthFuture, setIsSelectedMonthFuture] = useState();
+  const [isSelectedMonthCurrent, setIsSelectedMonthCurrent] = useState(false);
+  const [isSelectedMonthPast, setIsSelectedMonthPast] = useState(false);
+  const [isSelectedMonthFuture, setIsSelectedMonthFuture] = useState(false);
+
+  const [isExpanded, setIsExpanded] = useState<boolean>(false);
 
   const NUMBER_OF_WEEKDAYS_IN_THE_MONTH = getWeekdaysInAMonth(
     selectedDateInformation.SELECTED_MONTH,
@@ -70,12 +77,30 @@ export const MonthSummary = () => {
   }, [dbMonthData]);
 
   useEffect(() => {
-    setIsSelectedMonthCurrent(
-      () =>
-        `${selectedDateInformation.SELECTED_MONTH}/${selectedDateInformation.SELECTED_YEAR}` ===
-        `${currentDateInformation.CURRENT_MONTH}/${currentDateInformation.CURRENT_YEAR}`
+    const selectedDateObject = new Date(
+      selectedDateInformation.SELECTED_YEAR,
+      selectedDateInformation.SELECTED_MONTH
     );
-  }, [selectedDateInformation]);
+
+    const currentDateObject = new Date(
+      currentDateInformation.CURRENT_YEAR,
+      currentDateInformation.CURRENT_MONTH
+    );
+
+    if (selectedDateObject < currentDateObject) {
+      setIsSelectedMonthCurrent(() => false);
+      setIsSelectedMonthFuture(() => false);
+      setIsSelectedMonthPast(() => true);
+    } else if (selectedDateObject > currentDateObject) {
+      setIsSelectedMonthCurrent(() => false);
+      setIsSelectedMonthFuture(() => true);
+      setIsSelectedMonthPast(() => false);
+    } else {
+      setIsSelectedMonthCurrent(() => true);
+      setIsSelectedMonthFuture(() => false);
+      setIsSelectedMonthPast(() => false);
+    }
+  }, [currentDateInformation, selectedDateInformation]);
 
   return (
     <View
@@ -103,6 +128,11 @@ export const MonthSummary = () => {
           }}
         />
         <Pressable
+          onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
+            setIsExpanded((isExpanded) => !isExpanded);
+          }}
           onLongPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
@@ -111,7 +141,7 @@ export const MonthSummary = () => {
         >
           <Text
             style={{
-              color: isSelectedMonthCurrent ? "green" : "black",
+              color: isSelectedMonthCurrent ? walledGreen : "black",
               fontWeight: isSelectedMonthCurrent ? "bold" : "normal",
             }}
             variant="titleMedium"
@@ -130,132 +160,284 @@ export const MonthSummary = () => {
           }}
         />
       </View>
-
-      {dbMonthData.length ? (
+      {isExpanded && (
         <View>
-          <Text>
-            <Text style={{ fontWeight: "bold" }}>
-              Days worked:{" "}
-              <Text
-                style={{
-                  color:
-                    totalHoursWorked /
-                      (DEFAULT_HOURS_WORKED *
-                        NUMBER_OF_WEEKDAYS_IN_THE_MONTH_SO_FAR) >
-                    0.85
-                      ? "green"
-                      : "red",
-                  fontWeight: "bold",
-                }}
-              >
-                {dbMonthData.length}
-              </Text>
-            </Text>{" "}
-            (out of {NUMBER_OF_WEEKDAYS_IN_THE_MONTH_SO_FAR} so far) (
-            {NUMBER_OF_WEEKDAYS_IN_THE_MONTH} month max)
-          </Text>
-          <Text>
-            <Text style={{ fontWeight: "bold" }}>Total hours worked: </Text>
-            <Text
-              style={{
-                color:
-                  totalHoursWorked /
-                    (DEFAULT_HOURS_WORKED *
-                      NUMBER_OF_WEEKDAYS_IN_THE_MONTH_SO_FAR) >
-                  0.85
-                    ? "green"
-                    : "red",
-                fontWeight: "bold",
-              }}
-            >
-              {Math.round(totalHoursWorked * 100) / 100}
-            </Text>{" "}
-            (out of{" "}
-            {DEFAULT_HOURS_WORKED * NUMBER_OF_WEEKDAYS_IN_THE_MONTH_SO_FAR} so
-            far) ({DEFAULT_HOURS_WORKED * NUMBER_OF_WEEKDAYS_IN_THE_MONTH} month
-            max)
-          </Text>
-          <Text>
-            <Text style={{ fontWeight: "bold" }}>Average hours worked:</Text>{" "}
-            <Text
-              style={{
-                color:
-                  totalHoursWorked /
-                    NUMBER_OF_WEEKDAYS_IN_THE_MONTH_SO_FAR /
+          {!!isSelectedMonthCurrent ? (
+            <CurrentMonthSummaryWrapper>
+              <View>
+                <Text>
+                  <Text style={{ fontWeight: "bold" }}>
+                    Days worked:{" "}
+                    <Text
+                      style={{
+                        color:
+                          totalHoursWorked /
+                            (DEFAULT_HOURS_WORKED *
+                              NUMBER_OF_WEEKDAYS_IN_THE_MONTH_SO_FAR) >
+                          HIGH_DISTINCTION_THRESHOLD
+                            ? walledGreen
+                            : xmasCandy,
+                        fontWeight: "bold",
+                      }}
+                    >
+                      {dbMonthData.length}
+                    </Text>
+                  </Text>{" "}
+                  (out of {NUMBER_OF_WEEKDAYS_IN_THE_MONTH_SO_FAR} so far) (
+                  {NUMBER_OF_WEEKDAYS_IN_THE_MONTH} month max)
+                </Text>
+                <Text>
+                  <Text style={{ fontWeight: "bold" }}>
+                    Total hours worked:{" "}
+                  </Text>
+                  <Text
+                    style={{
+                      color:
+                        totalHoursWorked /
+                          (DEFAULT_HOURS_WORKED *
+                            NUMBER_OF_WEEKDAYS_IN_THE_MONTH_SO_FAR) >
+                        HIGH_DISTINCTION_THRESHOLD
+                          ? walledGreen
+                          : xmasCandy,
+                      fontWeight: "bold",
+                    }}
+                  >
+                    {Math.round(totalHoursWorked * 100) / 100}
+                  </Text>{" "}
+                  (out of{" "}
+                  {DEFAULT_HOURS_WORKED *
+                    NUMBER_OF_WEEKDAYS_IN_THE_MONTH_SO_FAR}{" "}
+                  so far) (
+                  {DEFAULT_HOURS_WORKED * NUMBER_OF_WEEKDAYS_IN_THE_MONTH} month
+                  max)
+                </Text>
+                <Text>
+                  <Text style={{ fontWeight: "bold" }}>
+                    Average hours worked:
+                  </Text>{" "}
+                  <Text
+                    style={{
+                      color:
+                        totalHoursWorked /
+                          NUMBER_OF_WEEKDAYS_IN_THE_MONTH_SO_FAR /
+                          ((DEFAULT_HOURS_WORKED *
+                            NUMBER_OF_WEEKDAYS_IN_THE_MONTH) /
+                            NUMBER_OF_WEEKDAYS_IN_THE_MONTH) >
+                        HIGH_DISTINCTION_THRESHOLD
+                          ? walledGreen
+                          : xmasCandy,
+                      fontWeight: "bold",
+                    }}
+                  >
+                    {Math.round(
+                      (totalHoursWorked /
+                        NUMBER_OF_WEEKDAYS_IN_THE_MONTH_SO_FAR) *
+                        100
+                    ) / 100}{" "}
+                  </Text>
+                  (on days worked{" "}
+                  <Text
+                    style={{
+                      color:
+                        totalHoursWorked /
+                          dbMonthData.length /
+                          ((DEFAULT_HOURS_WORKED *
+                            NUMBER_OF_WEEKDAYS_IN_THE_MONTH) /
+                            NUMBER_OF_WEEKDAYS_IN_THE_MONTH) >
+                        HIGH_DISTINCTION_THRESHOLD
+                          ? walledGreen
+                          : xmasCandy,
+                      fontWeight: "bold",
+                    }}
+                  >
+                    {Math.round((totalHoursWorked / dbMonthData.length) * 100) /
+                      100}
+                  </Text>
+                  {") "}
+                  (optimal{" "}
+                  {Math.round(
                     ((DEFAULT_HOURS_WORKED * NUMBER_OF_WEEKDAYS_IN_THE_MONTH) /
-                      NUMBER_OF_WEEKDAYS_IN_THE_MONTH) >
-                  0.85
-                    ? "green"
-                    : "red",
-                fontWeight: "bold",
-              }}
-            >
-              {Math.round(
-                (totalHoursWorked / NUMBER_OF_WEEKDAYS_IN_THE_MONTH_SO_FAR) *
-                  100
-              ) / 100}{" "}
-            </Text>
-            (on worked days{" "}
-            <Text
-              style={{
-                color:
-                  totalHoursWorked /
-                    dbMonthData.length /
-                    ((DEFAULT_HOURS_WORKED * NUMBER_OF_WEEKDAYS_IN_THE_MONTH) /
-                      NUMBER_OF_WEEKDAYS_IN_THE_MONTH) >
-                  0.85
-                    ? "green"
-                    : "red",
-                fontWeight: "bold",
-              }}
-            >
-              {Math.round((totalHoursWorked / dbMonthData.length) * 100) / 100}
-            </Text>
-            {") "}
-            (ideal{" "}
-            {Math.round(
-              ((DEFAULT_HOURS_WORKED * NUMBER_OF_WEEKDAYS_IN_THE_MONTH) /
-                NUMBER_OF_WEEKDAYS_IN_THE_MONTH) *
-                100
-            ) / 100}
-            )
-          </Text>
-          <Text>
-            <Text style={{ fontWeight: "bold" }}>Gross pay: </Text>
-            <Text
-              style={{
-                color:
-                  totalGrossPay /
-                    (DEFAULT_HOURS_WORKED *
+                      NUMBER_OF_WEEKDAYS_IN_THE_MONTH) *
+                      100
+                  ) / 100}
+                  )
+                </Text>
+                <Text>
+                  <Text style={{ fontWeight: "bold" }}>Gross pay: </Text>
+                  <Text
+                    style={{
+                      color:
+                        totalGrossPay /
+                          (DEFAULT_HOURS_WORKED *
+                            DEFAULT_HOURLY_RATE *
+                            NUMBER_OF_WEEKDAYS_IN_THE_MONTH_SO_FAR) >
+                        HIGH_DISTINCTION_THRESHOLD
+                          ? walledGreen
+                          : xmasCandy,
+                      fontWeight: "bold",
+                    }}
+                  >
+                    ${Math.round(totalGrossPay * 100) / 100}
+                  </Text>{" "}
+                  (out of $
+                  {Math.round(
+                    DEFAULT_HOURS_WORKED *
                       DEFAULT_HOURLY_RATE *
-                      NUMBER_OF_WEEKDAYS_IN_THE_MONTH_SO_FAR) >
-                  0.85
-                    ? "green"
-                    : "red",
-                fontWeight: "bold",
-              }}
-            >
-              ${Math.round(totalGrossPay * 100) / 100}
-            </Text>{" "}
-            (out of $
-            {Math.round(
-              DEFAULT_HOURS_WORKED *
-                DEFAULT_HOURLY_RATE *
-                NUMBER_OF_WEEKDAYS_IN_THE_MONTH_SO_FAR *
-                100
-            ) / 100}{" "}
-            so far) ($
-            {Math.round(
-              DEFAULT_HOURS_WORKED *
-                DEFAULT_HOURLY_RATE *
-                NUMBER_OF_WEEKDAYS_IN_THE_MONTH *
-                100
-            ) / 100}{" "}
-            month max)
-          </Text>
+                      NUMBER_OF_WEEKDAYS_IN_THE_MONTH_SO_FAR *
+                      100
+                  ) / 100}{" "}
+                  so far) ($
+                  {Math.round(
+                    DEFAULT_HOURS_WORKED *
+                      DEFAULT_HOURLY_RATE *
+                      NUMBER_OF_WEEKDAYS_IN_THE_MONTH *
+                      100
+                  ) / 100}{" "}
+                  month max)
+                </Text>
+              </View>
+            </CurrentMonthSummaryWrapper>
+          ) : undefined}
+          {!!isSelectedMonthPast ? (
+            <PastMonthSummaryWrapper>
+              <Text style={{ fontWeight: "bold" }}>
+                Days worked:{" "}
+                <Text
+                  style={{
+                    color:
+                      dbMonthData.length / NUMBER_OF_WEEKDAYS_IN_THE_MONTH >
+                      HIGH_DISTINCTION_THRESHOLD
+                        ? walledGreen
+                        : xmasCandy,
+                    fontWeight: "bold",
+                  }}
+                >
+                  {dbMonthData.length}{" "}
+                  <Text>({NUMBER_OF_WEEKDAYS_IN_THE_MONTH} month max)</Text>
+                </Text>
+              </Text>
+              <Text style={{ fontWeight: "bold" }}>
+                Total hours worked:{" "}
+                <Text
+                  style={{
+                    color:
+                      totalHoursWorked /
+                        (DEFAULT_HOURS_WORKED *
+                          NUMBER_OF_WEEKDAYS_IN_THE_MONTH) >
+                      HIGH_DISTINCTION_THRESHOLD
+                        ? walledGreen
+                        : xmasCandy,
+                    fontWeight: "bold",
+                  }}
+                >
+                  {Math.round(totalHoursWorked * 100) / 100}
+                </Text>{" "}
+                <Text>
+                  (
+                  {Math.round(
+                    DEFAULT_HOURS_WORKED * NUMBER_OF_WEEKDAYS_IN_THE_MONTH * 100
+                  ) / 100}{" "}
+                  month max)
+                </Text>
+              </Text>
+              <Text style={{ fontWeight: "bold" }}>
+                Average hours worked:{" "}
+                <Text
+                  style={{
+                    color:
+                      totalHoursWorked /
+                        NUMBER_OF_WEEKDAYS_IN_THE_MONTH /
+                        ((DEFAULT_HOURS_WORKED *
+                          NUMBER_OF_WEEKDAYS_IN_THE_MONTH) /
+                          NUMBER_OF_WEEKDAYS_IN_THE_MONTH) >
+                      HIGH_DISTINCTION_THRESHOLD
+                        ? walledGreen
+                        : xmasCandy,
+                    fontWeight: "bold",
+                  }}
+                >
+                  {Math.round(
+                    (totalHoursWorked / NUMBER_OF_WEEKDAYS_IN_THE_MONTH) * 100
+                  ) / 100}{" "}
+                  <Text>
+                    (
+                    {Math.round((totalHoursWorked / dbMonthData.length) * 100) /
+                      100}{" "}
+                    on days worked){" "}
+                  </Text>
+                  <Text>
+                    (optimal{" "}
+                    {Math.round(
+                      ((DEFAULT_HOURS_WORKED *
+                        NUMBER_OF_WEEKDAYS_IN_THE_MONTH) /
+                        NUMBER_OF_WEEKDAYS_IN_THE_MONTH) *
+                        100
+                    ) / 100}
+                    )
+                  </Text>
+                </Text>
+              </Text>
+              <Text style={{ fontWeight: "bold" }}>
+                Gross pay:{" "}
+                <Text
+                  style={{
+                    color:
+                      totalGrossPay /
+                        (DEFAULT_HOURS_WORKED *
+                          DEFAULT_HOURLY_RATE *
+                          NUMBER_OF_WEEKDAYS_IN_THE_MONTH) >
+                      HIGH_DISTINCTION_THRESHOLD
+                        ? walledGreen
+                        : xmasCandy,
+                    fontWeight: "bold",
+                  }}
+                >
+                  ${Math.round(totalGrossPay * 100) / 100}
+                </Text>{" "}
+                <Text>
+                  ($
+                  {Math.round(
+                    DEFAULT_HOURLY_RATE *
+                      DEFAULT_HOURS_WORKED *
+                      NUMBER_OF_WEEKDAYS_IN_THE_MONTH *
+                      100
+                  ) / 100}{" "}
+                  month max)
+                </Text>
+              </Text>
+            </PastMonthSummaryWrapper>
+          ) : undefined}
+          {!!isSelectedMonthFuture ? (
+            <FutureMonthSummaryWrapper>
+              <Text style={{ fontWeight: "bold" }}>
+                Available work days:{" "}
+                <Text style={{ color: walledGreen, fontWeight: "bold" }}>
+                  {NUMBER_OF_WEEKDAYS_IN_THE_MONTH}
+                </Text>
+              </Text>
+              <Text style={{ fontWeight: "bold" }}>
+                Available work hours:{" "}
+                <Text style={{ color: walledGreen, fontWeight: "bold" }}>
+                  {Math.round(
+                    DEFAULT_HOURS_WORKED * NUMBER_OF_WEEKDAYS_IN_THE_MONTH * 100
+                  ) / 100}
+                </Text>
+              </Text>
+              <Text style={{ fontWeight: "bold" }}>
+                Max possible gross pay:{" "}
+                <Text style={{ color: walledGreen, fontWeight: "bold" }}>
+                  $
+                  {Math.round(
+                    DEFAULT_HOURS_WORKED *
+                      DEFAULT_HOURLY_RATE *
+                      NUMBER_OF_WEEKDAYS_IN_THE_MONTH *
+                      100
+                  ) / 100}
+                </Text>
+              </Text>
+            </FutureMonthSummaryWrapper>
+          ) : undefined}
         </View>
-      ) : (
-        <View />
       )}
     </View>
   );

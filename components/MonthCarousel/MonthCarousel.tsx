@@ -28,7 +28,14 @@ import {
   setSelectedDate,
   setTouchedDateInformation,
 } from "@store";
-import { APP_PADDING } from "@theme";
+import {
+  APP_PADDING,
+  artisanGold,
+  forbiddenBlackberry,
+  walledGreen,
+  xmasCandy,
+} from "@theme";
+import { DbMonthData } from "@types";
 import {
   formatDateString,
   getMonthInformation,
@@ -42,7 +49,6 @@ import {
   ModalButtonWrapper,
   MonthCarouselWrapper,
 } from "./Styled";
-import { DbMonthData } from "@types";
 
 const { width: WINDOW_WIDTH } = Dimensions.get("window");
 
@@ -400,6 +406,39 @@ export const MonthCarousel = () => {
         <MonthTopInformation />
         <GestureDetector gesture={panGesture}>
           <MonthCarouselWrapper>
+            <View style={{ flexDirection: "row" }}>
+              {["M", "T", "W", "T", "F", "S", "S"].map((letter, idx) => (
+                <View
+                  key={idx}
+                  style={{
+                    alignItems: "center",
+                    borderRadius: 50,
+                    height: (WINDOW_WIDTH - APP_PADDING * 2) / 7,
+                    justifyContent: "center",
+                    width: (WINDOW_WIDTH - APP_PADDING * 2) / 7,
+                  }}
+                >
+                  <View
+                    style={{
+                      backgroundColor: idx >= 5 ? walledGreen : "white",
+                      borderColor: walledGreen,
+                      borderWidth: 2,
+                      padding: APP_PADDING / 2,
+                      borderRadius: 5,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        color: idx >= 5 ? "white" : walledGreen,
+                        fontWeight: "bold",
+                      }}
+                    >
+                      {letter}
+                    </Text>
+                  </View>
+                </View>
+              ))}
+            </View>
             <CalendarWrapper>
               {Array.from({
                 length:
@@ -471,42 +510,55 @@ export const MonthCarousel = () => {
                               idx + 1 - selectedMonthInformation.firstDayIndex
                             }/${SELECTED_MONTH}/${SELECTED_YEAR}`
                         )
-                          ? "green"
+                          ? dbMonthData
+                              .find(
+                                (record) =>
+                                  record.dayId ===
+                                  `${
+                                    idx +
+                                    1 -
+                                    selectedMonthInformation.firstDayIndex
+                                  }/${SELECTED_MONTH}/${SELECTED_YEAR}`
+                              )
+                              ?.hoursWorked.reduce(
+                                (acc, val) => acc + val,
+                                0
+                              ) !== DEFAULT_HOURS_WORKED
+                            ? artisanGold
+                            : walledGreen
                           : "white",
-                        borderColor:
-                          `${
-                            idx + 1 - selectedMonthInformation.firstDayIndex
-                          }/${SELECTED_MONTH}/${SELECTED_YEAR}` ===
-                          `${CURRENT_DATE}/${CURRENT_MONTH}/${CURRENT_YEAR}`
-                            ? "blue"
-                            : idx < selectedMonthInformation.firstDayIndex
-                            ? "rgba(1, 1, 1, 0.1)"
-                            : idx - selectedMonthInformation.firstDayIndex >=
-                              selectedMonthInformation.numberOfDays
-                            ? "rgba(1, 1, 1, 0.1)"
-                            : "rgba(1, 1, 1, 0.25)",
+                        borderColor: "white",
                         borderRadius: 50,
                         justifyContent: "center",
-                        borderWidth:
-                          `${
-                            idx + 1 - selectedMonthInformation.firstDayIndex
-                          }/${SELECTED_MONTH}/${SELECTED_YEAR}` ===
-                          `${CURRENT_DATE}/${CURRENT_MONTH}/${CURRENT_YEAR}`
-                            ? 3
-                            : 1,
+                        borderWidth: 1,
                         height: (WINDOW_WIDTH - APP_PADDING * 2) / 7,
                         width: (WINDOW_WIDTH - APP_PADDING * 2) / 7,
                       }}
                     >
-                      <Text>
-                        {idx < selectedMonthInformation.firstDayIndex ||
-                        idx - selectedMonthInformation.firstDayIndex >=
-                          selectedMonthInformation.numberOfDays
-                          ? ""
-                          : `${
-                              idx + 1 - selectedMonthInformation.firstDayIndex
-                            }`}
-                      </Text>
+                      {idx < selectedMonthInformation.firstDayIndex ||
+                      idx - selectedMonthInformation.firstDayIndex >=
+                        selectedMonthInformation.numberOfDays ? (
+                        <View />
+                      ) : (
+                        <Text
+                          style={{
+                            color: !!dbMonthData.find(
+                              (record) =>
+                                record.dayId ===
+                                `${
+                                  idx +
+                                  1 -
+                                  selectedMonthInformation.firstDayIndex
+                                }/${SELECTED_MONTH}/${SELECTED_YEAR}`
+                            )
+                              ? "white"
+                              : "black",
+                            fontWeight: "bold",
+                          }}
+                        >
+                          {idx + 1 - selectedMonthInformation.firstDayIndex}
+                        </Text>
+                      )}
                     </View>
                   </Pressable>
                 ))}
@@ -623,8 +675,7 @@ export const MonthCarousel = () => {
                     )
                   }
                   icon="delete"
-                  iconColor="red"
-                  mode="outlined"
+                  iconColor={xmasCandy}
                   onPress={() => {
                     setIsDialogOpen(() => true);
                   }}
@@ -634,10 +685,12 @@ export const MonthCarousel = () => {
                     mode="outlined"
                     onPress={handleCancel}
                     style={{ marginRight: APP_PADDING / 2.5 }}
+                    textColor={forbiddenBlackberry}
                   >
                     Cancel
                   </Button>
                   <Button
+                    buttonColor={forbiddenBlackberry}
                     mode="contained"
                     onPress={() => {
                       handleInsertData(
@@ -676,11 +729,12 @@ export const MonthCarousel = () => {
                       onPress={() => {
                         setIsDialogOpen(() => false);
                       }}
+                      textColor={xmasCandy}
                     >
                       Cancel
                     </Button>
                     <Button
-                      buttonColor="red"
+                      buttonColor={xmasCandy}
                       mode="contained"
                       onPress={() => {
                         setIsDialogOpen(() => false);
@@ -692,7 +746,7 @@ export const MonthCarousel = () => {
                         dispatch(setTouchedDateInformation(null));
                       }}
                     >
-                      DELETE
+                      Delete
                     </Button>
                   </Dialog.Actions>
                 </Dialog>
@@ -714,9 +768,5 @@ export const MonthCarousel = () => {
 };
 
 export const MonthTopInformation = () => {
-  return (
-    <View>
-      <Text>Month Top Information </Text>
-    </View>
-  );
+  return <View />;
 };

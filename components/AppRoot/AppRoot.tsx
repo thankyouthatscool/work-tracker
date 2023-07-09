@@ -7,6 +7,7 @@ import { Text } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { MonthCarousel } from "@components/MonthCarousel";
+import { SettingsScreen } from "@components/SettingsScreen";
 import { useAppDispatch, useAppSelector } from "@hooks";
 import { setIsLoading } from "@store";
 import { createDefaultTableSQLString, dropDefaultTableSQLString } from "@utils";
@@ -16,14 +17,6 @@ const Tab = createBottomTabNavigator<{
   MonthCarousel: undefined;
   Settings: undefined;
 }>();
-
-export const SettingsScreen = () => {
-  return (
-    <SafeAreaView>
-      <Text>Settings</Text>
-    </SafeAreaView>
-  );
-};
 
 export const AppRoot = () => {
   const dispatch = useAppDispatch();

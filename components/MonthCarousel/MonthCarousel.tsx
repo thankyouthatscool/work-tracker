@@ -328,9 +328,9 @@ export const MonthCarousel = () => {
 
   useEffect(() => {
     if (!!SELECTED_MONTH && !!SELECTED_YEAR) {
-      console.log(
-        `Getting month information for ${SELECTED_MONTH}/${SELECTED_YEAR}...`
-      );
+      // console.log(
+      //   `Getting month information for ${SELECTED_MONTH}/${SELECTED_YEAR}...`
+      // );
 
       setSelectedMonthInformation(() =>
         getMonthInformation(SELECTED_YEAR, SELECTED_MONTH)
@@ -340,9 +340,9 @@ export const MonthCarousel = () => {
 
   useEffect(() => {
     db.transaction((tx) => {
-      console.log(
-        `Looking up table data for ${SELECTED_MONTH}/${SELECTED_YEAR}...`
-      );
+      // console.log(
+      //   `Looking up table data for ${SELECTED_MONTH}/${SELECTED_YEAR}...`
+      // );
 
       tx.executeSql(
         `

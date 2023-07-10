@@ -15,26 +15,14 @@ import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { MonthSummary } from "@components/MonthSummary";
-import {
-  DEFAULT_HOURS_WORKED,
-  DEFAULT_HOURLY_RATE,
-  TRANSLATION_X_THRESHOLD,
-  VELOCITY_X_THRESHOLD,
-  DEFAULT_COMMENT,
-} from "@constants";
+import { TRANSLATION_X_THRESHOLD, VELOCITY_X_THRESHOLD } from "@constants";
 import { useAppDispatch, useAppSelector } from "@hooks";
 import {
   setDbMonthData,
   setSelectedDate,
   setTouchedDateInformation,
 } from "@store";
-import {
-  APP_PADDING,
-  artisanGold,
-  forbiddenBlackberry,
-  walledGreen,
-  xmasCandy,
-} from "@theme";
+import { APP_PADDING, colors } from "@theme";
 import { DbMonthData } from "@types";
 import {
   formatDateString,
@@ -55,7 +43,16 @@ const { width: WINDOW_WIDTH } = Dimensions.get("window");
 export const MonthCarousel = () => {
   const dispatch = useAppDispatch();
 
-  const { dbMonthData } = useAppSelector(({ app }) => app);
+  const {
+    appSettings: {
+      appSettingsDefaults: {
+        defaultHoursWorked: DEFAULT_HOURS_WORKED,
+        defaultHourlyRate: DEFAULT_HOURLY_RATE,
+        defaultComment: DEFAULT_COMMENT,
+      },
+    },
+    dbMonthData,
+  } = useAppSelector(({ app }) => app);
 
   const [selectedMonthInformation, setSelectedMonthInformation] = useState<
     ReturnType<typeof getMonthInformation> | undefined
@@ -420,8 +417,8 @@ export const MonthCarousel = () => {
                 >
                   <View
                     style={{
-                      backgroundColor: idx >= 5 ? walledGreen : "white",
-                      borderColor: walledGreen,
+                      backgroundColor: idx >= 5 ? colors.walledGreen : "white",
+                      borderColor: colors.walledGreen,
                       borderWidth: 2,
                       padding: APP_PADDING / 2,
                       borderRadius: 5,
@@ -429,7 +426,7 @@ export const MonthCarousel = () => {
                   >
                     <Text
                       style={{
-                        color: idx >= 5 ? "white" : walledGreen,
+                        color: idx >= 5 ? "white" : colors.walledGreen,
                         fontWeight: "bold",
                       }}
                     >
@@ -524,13 +521,25 @@ export const MonthCarousel = () => {
                                 (acc, val) => acc + val,
                                 0
                               ) !== DEFAULT_HOURS_WORKED
-                            ? artisanGold
-                            : walledGreen
+                            ? colors.artisanGold
+                            : colors.walledGreen
                           : "white",
-                        borderColor: "white",
+                        borderColor:
+                          `${
+                            idx + 1 - selectedMonthInformation.firstDayIndex
+                          }/${SELECTED_MONTH}/${SELECTED_YEAR}` ===
+                          `${CURRENT_DATE}/${CURRENT_MONTH}/${CURRENT_YEAR}`
+                            ? colors.forbiddenBlackberry
+                            : "white",
                         borderRadius: 50,
                         justifyContent: "center",
-                        borderWidth: 1,
+                        borderWidth:
+                          `${
+                            idx + 1 - selectedMonthInformation.firstDayIndex
+                          }/${SELECTED_MONTH}/${SELECTED_YEAR}` ===
+                          `${CURRENT_DATE}/${CURRENT_MONTH}/${CURRENT_YEAR}`
+                            ? 2
+                            : 1,
                         height: (WINDOW_WIDTH - APP_PADDING * 2) / 7,
                         width: (WINDOW_WIDTH - APP_PADDING * 2) / 7,
                       }}
@@ -589,7 +598,11 @@ export const MonthCarousel = () => {
               >
                 <Text
                   variant="titleLarge"
-                  style={{ marginVertical: APP_PADDING / 2 }}
+                  style={{
+                    color: colors.forbiddenBlackberry,
+                    fontWeight: "bold",
+                    marginVertical: APP_PADDING / 2,
+                  }}
                 >
                   {touchedDateInformation?.SELECTED_DATE}/
                   {touchedDateInformation?.SELECTED_MONTH}/
@@ -675,7 +688,7 @@ export const MonthCarousel = () => {
                     )
                   }
                   icon="delete"
-                  iconColor={xmasCandy}
+                  iconColor={colors.xmasCandy}
                   onPress={() => {
                     setIsDialogOpen(() => true);
                   }}
@@ -685,12 +698,12 @@ export const MonthCarousel = () => {
                     mode="outlined"
                     onPress={handleCancel}
                     style={{ marginRight: APP_PADDING / 2.5 }}
-                    textColor={forbiddenBlackberry}
+                    textColor={colors.forbiddenBlackberry}
                   >
                     Cancel
                   </Button>
                   <Button
-                    buttonColor={forbiddenBlackberry}
+                    buttonColor={colors.forbiddenBlackberry}
                     mode="contained"
                     onPress={() => {
                       handleInsertData(
@@ -729,12 +742,12 @@ export const MonthCarousel = () => {
                       onPress={() => {
                         setIsDialogOpen(() => false);
                       }}
-                      textColor={xmasCandy}
+                      textColor={colors.xmasCandy}
                     >
                       Cancel
                     </Button>
                     <Button
-                      buttonColor={xmasCandy}
+                      buttonColor={colors.xmasCandy}
                       mode="contained"
                       onPress={() => {
                         setIsDialogOpen(() => false);

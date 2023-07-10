@@ -30,7 +30,18 @@ export type DbMonthData = {
   comment: string;
 };
 
+export type AppSettingsDefaults = {
+  defaultHoursWorked: number;
+  defaultHourlyRate: number;
+  defaultComment: string;
+};
+
+export type AppSettings = {
+  appSettingsDefaults: AppSettingsDefaults;
+};
+
 export type AppState = {
+  appSettings: AppSettings;
   currentDateInformation: CurrentDateInformation;
   databaseInstance: SQLite.WebSQLDatabase;
   dbMonthData: DbMonthData[];

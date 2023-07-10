@@ -9,12 +9,7 @@ import {
   HIGH_DISTINCTION_THRESHOLD,
 } from "@constants";
 import { useAppSelector, useSelectedMonth } from "@hooks";
-import {
-  APP_PADDING,
-  forbiddenBlackberry,
-  walledGreen,
-  xmasCandy,
-} from "@theme";
+import { APP_PADDING, colors } from "@theme";
 import {
   getMonthName,
   getWeekdaysInAMonth,
@@ -124,8 +119,8 @@ export const MonthSummary = () => {
         }}
       >
         <IconButton
-          containerColor={walledGreen}
-          iconColor={forbiddenBlackberry}
+          containerColor={colors.walledGreen}
+          iconColor={colors.forbiddenBlackberry}
           icon="chevron-left"
           mode="contained"
           onPress={() => {
@@ -148,7 +143,7 @@ export const MonthSummary = () => {
         >
           <Text
             style={{
-              color: isSelectedMonthCurrent ? walledGreen : "black",
+              color: isSelectedMonthCurrent ? colors.walledGreen : "black",
               fontWeight: isSelectedMonthCurrent ? "bold" : "normal",
             }}
             variant="titleMedium"
@@ -158,8 +153,8 @@ export const MonthSummary = () => {
           </Text>
         </Pressable>
         <IconButton
-          containerColor={walledGreen}
-          iconColor={forbiddenBlackberry}
+          containerColor={colors.walledGreen}
+          iconColor={colors.forbiddenBlackberry}
           icon="chevron-right"
           mode="contained"
           onPress={() => {
@@ -184,8 +179,8 @@ export const MonthSummary = () => {
                             (DEFAULT_HOURS_WORKED *
                               NUMBER_OF_WEEKDAYS_IN_THE_MONTH_SO_FAR) >
                           HIGH_DISTINCTION_THRESHOLD
-                            ? walledGreen
-                            : xmasCandy,
+                            ? colors.walledGreen
+                            : colors.xmasCandy,
                         fontWeight: "bold",
                       }}
                     >
@@ -206,8 +201,8 @@ export const MonthSummary = () => {
                           (DEFAULT_HOURS_WORKED *
                             NUMBER_OF_WEEKDAYS_IN_THE_MONTH_SO_FAR) >
                         HIGH_DISTINCTION_THRESHOLD
-                          ? walledGreen
-                          : xmasCandy,
+                          ? colors.walledGreen
+                          : colors.xmasCandy,
                       fontWeight: "bold",
                     }}
                   >
@@ -233,8 +228,8 @@ export const MonthSummary = () => {
                             NUMBER_OF_WEEKDAYS_IN_THE_MONTH) /
                             NUMBER_OF_WEEKDAYS_IN_THE_MONTH) >
                         HIGH_DISTINCTION_THRESHOLD
-                          ? walledGreen
-                          : xmasCandy,
+                          ? colors.walledGreen
+                          : colors.xmasCandy,
                       fontWeight: "bold",
                     }}
                   >
@@ -254,8 +249,8 @@ export const MonthSummary = () => {
                             NUMBER_OF_WEEKDAYS_IN_THE_MONTH) /
                             NUMBER_OF_WEEKDAYS_IN_THE_MONTH) >
                         HIGH_DISTINCTION_THRESHOLD
-                          ? walledGreen
-                          : xmasCandy,
+                          ? colors.walledGreen
+                          : colors.xmasCandy,
                       fontWeight: "bold",
                     }}
                   >
@@ -281,8 +276,8 @@ export const MonthSummary = () => {
                             DEFAULT_HOURLY_RATE *
                             NUMBER_OF_WEEKDAYS_IN_THE_MONTH_SO_FAR) >
                         HIGH_DISTINCTION_THRESHOLD
-                          ? walledGreen
-                          : xmasCandy,
+                          ? colors.walledGreen
+                          : colors.xmasCandy,
                       fontWeight: "bold",
                     }}
                   >
@@ -316,8 +311,8 @@ export const MonthSummary = () => {
                     color:
                       dbMonthData.length / NUMBER_OF_WEEKDAYS_IN_THE_MONTH >
                       HIGH_DISTINCTION_THRESHOLD
-                        ? walledGreen
-                        : xmasCandy,
+                        ? colors.walledGreen
+                        : colors.xmasCandy,
                     fontWeight: "bold",
                   }}
                 >
@@ -334,8 +329,8 @@ export const MonthSummary = () => {
                         (DEFAULT_HOURS_WORKED *
                           NUMBER_OF_WEEKDAYS_IN_THE_MONTH) >
                       HIGH_DISTINCTION_THRESHOLD
-                        ? walledGreen
-                        : xmasCandy,
+                        ? colors.walledGreen
+                        : colors.xmasCandy,
                     fontWeight: "bold",
                   }}
                 >
@@ -360,8 +355,8 @@ export const MonthSummary = () => {
                           NUMBER_OF_WEEKDAYS_IN_THE_MONTH) /
                           NUMBER_OF_WEEKDAYS_IN_THE_MONTH) >
                       HIGH_DISTINCTION_THRESHOLD
-                        ? walledGreen
-                        : xmasCandy,
+                        ? colors.walledGreen
+                        : colors.xmasCandy,
                     fontWeight: "bold",
                   }}
                 >
@@ -371,7 +366,7 @@ export const MonthSummary = () => {
                   <Text>
                     (
                     {Math.round((totalHoursWorked / dbMonthData.length) * 100) /
-                      100}{" "}
+                      100 || 0}{" "}
                     on days worked){" "}
                   </Text>
                   <Text>
@@ -396,8 +391,8 @@ export const MonthSummary = () => {
                           DEFAULT_HOURLY_RATE *
                           NUMBER_OF_WEEKDAYS_IN_THE_MONTH) >
                       HIGH_DISTINCTION_THRESHOLD
-                        ? walledGreen
-                        : xmasCandy,
+                        ? colors.walledGreen
+                        : colors.xmasCandy,
                     fontWeight: "bold",
                   }}
                 >
@@ -420,13 +415,13 @@ export const MonthSummary = () => {
             <FutureMonthSummaryWrapper>
               <Text style={{ fontWeight: "bold" }}>
                 Available work days:{" "}
-                <Text style={{ color: walledGreen, fontWeight: "bold" }}>
+                <Text style={{ color: colors.walledGreen, fontWeight: "bold" }}>
                   {NUMBER_OF_WEEKDAYS_IN_THE_MONTH}
                 </Text>
               </Text>
               <Text style={{ fontWeight: "bold" }}>
                 Available work hours:{" "}
-                <Text style={{ color: walledGreen, fontWeight: "bold" }}>
+                <Text style={{ color: colors.walledGreen, fontWeight: "bold" }}>
                   {Math.round(
                     DEFAULT_HOURS_WORKED * NUMBER_OF_WEEKDAYS_IN_THE_MONTH * 100
                   ) / 100}
@@ -434,7 +429,7 @@ export const MonthSummary = () => {
               </Text>
               <Text style={{ fontWeight: "bold" }}>
                 Max possible gross pay:{" "}
-                <Text style={{ color: walledGreen, fontWeight: "bold" }}>
+                <Text style={{ color: colors.walledGreen, fontWeight: "bold" }}>
                   $
                   {Math.round(
                     DEFAULT_HOURS_WORKED *

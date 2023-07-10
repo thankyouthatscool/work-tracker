@@ -3,15 +3,14 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useCallback, useEffect } from "react";
 import { View } from "react-native";
-import { Text } from "react-native-paper";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 import { MonthCarousel } from "@components/MonthCarousel";
 import { SettingsScreen } from "@components/SettingsScreen";
 import { useAppDispatch, useAppSelector } from "@hooks";
-import { setIsLoading } from "@store";
+import { setIsLoading, setAppSettingDefaults } from "@store";
 import { createDefaultTableSQLString, dropDefaultTableSQLString } from "@utils";
-import { artisanGold, walledGreen, xmasCandy } from "@theme";
+import { colors } from "@theme";
+import { loadAppDefaults } from "@utils";
 
 const Tab = createBottomTabNavigator<{
   MonthCarousel: undefined;
@@ -32,7 +31,13 @@ export const AppRoot = () => {
       ({ code, message }) => {
         console.log(code, message);
       },
-      () => {
+      async () => {
+        const def = await loadAppDefaults();
+
+        console.log(def);
+
+        if (!!def) dispatch(setAppSettingDefaults(def));
+
         dispatch(setIsLoading(false));
       }
     );
@@ -54,7 +59,7 @@ export const AppRoot = () => {
           options={{
             tabBarIcon: ({ color, focused, size }) => (
               <MaterialCommunityIcons
-                color={focused ? walledGreen : color}
+                color={focused ? colors.walledGreen : color}
                 name="calendar-blank-outline"
                 size={size}
               />
@@ -67,7 +72,7 @@ export const AppRoot = () => {
           options={{
             tabBarIcon: ({ color, focused, size }) => (
               <MaterialCommunityIcons
-                color={focused ? walledGreen : color}
+                color={focused ? colors.walledGreen : color}
                 name="tune-vertical"
                 size={size}
               />

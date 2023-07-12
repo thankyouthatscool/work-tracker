@@ -13,7 +13,7 @@ import { colors } from "@theme";
 import { loadAppDefaults } from "@utils";
 
 export type TabProps = {
-  MonthCarousel: undefined;
+  MonthCarousel: { monthId?: string };
   Settings: undefined;
 };
 
@@ -30,8 +30,10 @@ export const AppRoot = () => {
         // tx.executeSql(dropDefaultTableSQLString);
         tx.executeSql(createDefaultTableSQLString);
       },
-      ({ code, message }) => {
-        console.log(code, message);
+      (err) => {
+        {
+          console.log(err);
+        }
       },
       async () => {
         const DEFAULTS = await loadAppDefaults();

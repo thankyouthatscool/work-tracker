@@ -82,8 +82,6 @@ export const SettingsScreen: FC<BottomTabScreenProps<TabProps, "Settings">> = ({
   }, []);
 
   const handleDeleteMonth = useCallback((monthId: string) => {
-    console.log(monthId);
-
     db.transaction(
       (tx) => {
         tx.executeSql(
@@ -230,7 +228,9 @@ export const SettingsScreen: FC<BottomTabScreenProps<TabProps, "Settings">> = ({
                   <Pressable
                     key={month.availableMonth}
                     onPress={() => {
-                      console.log(idx);
+                      navigation.navigate("MonthCarousel", {
+                        monthId: month.availableMonth,
+                      });
                     }}
                     onLongPress={() => {
                       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
@@ -280,6 +280,13 @@ export const SettingsScreen: FC<BottomTabScreenProps<TabProps, "Settings">> = ({
                 )}
               </View>
             </View>
+          </Card.Content>
+        </Card>
+        <Card style={{ margin: APP_PADDING / 2 }}>
+          <Card.Content>
+            <Text style={{ color: colors.walledGreen }} variant="titleLarge">
+              Backup
+            </Text>
           </Card.Content>
         </Card>
       </ScrollView>

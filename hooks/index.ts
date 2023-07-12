@@ -14,9 +14,9 @@ export const useSelectedMonth = () => {
   } = useAppSelector(({ app }) => app);
 
   const checkCurrentDate = useCallback(() => {
-    console.log(
-      "Checking the current date to make sure that it is not outdated yet."
-    );
+    // console.log(
+    //   "Checking the current date to make sure that it is not outdated yet."
+    // );
 
     const dateInstance = new Date();
 
@@ -59,60 +59,72 @@ export const useSelectedMonth = () => {
   }, [CURRENT_DATE, CURRENT_MONTH, CURRENT_YEAR]);
 
   const handleSelectedDateChange = useCallback(
-    (dir: "prev" | "previous" | "next" | "today") => {
+    (dir: "prev" | "previous" | "next" | "today" | "date", date?: string) => {
       checkCurrentDate();
 
-      if (dir === "prev" || dir === "previous") {
-        const DATE_STRING = `${SELECTED_YEAR}-${SELECTED_MONTH}-${SELECTED_DATE}`;
+      if (dir !== "date") {
+        if (dir === "prev" || dir === "previous") {
+          const DATE_STRING = `${SELECTED_YEAR}-${SELECTED_MONTH}-${SELECTED_DATE}`;
 
-        const CURRENT_SELECTED_DATE = new Date(Date.parse(DATE_STRING));
+          const CURRENT_SELECTED_DATE = new Date(Date.parse(DATE_STRING));
 
-        const newSelectedDate = new Date(
-          CURRENT_SELECTED_DATE.setMonth(CURRENT_SELECTED_DATE.getMonth())
-        );
+          const newSelectedDate = new Date(
+            CURRENT_SELECTED_DATE.setMonth(CURRENT_SELECTED_DATE.getMonth())
+          );
 
-        const NEW_SELECTED_DATE = newSelectedDate.getDate();
-        const NEW_SELECTED_MONTH = newSelectedDate.getMonth();
-        const NEW_SELECTED_YEAR = newSelectedDate.getFullYear();
+          const NEW_SELECTED_DATE = newSelectedDate.getDate();
+          const NEW_SELECTED_MONTH = newSelectedDate.getMonth();
+          const NEW_SELECTED_YEAR = newSelectedDate.getFullYear();
+
+          return dispatch(
+            setSelectedDate({
+              SELECTED_DATE: NEW_SELECTED_DATE,
+              SELECTED_MONTH: NEW_SELECTED_MONTH,
+              SELECTED_YEAR: NEW_SELECTED_YEAR,
+            })
+          );
+        }
+
+        if (dir === "next") {
+          const DATE_STRING = `${SELECTED_YEAR}-${SELECTED_MONTH}-${SELECTED_DATE}`;
+
+          const CURRENT_SELECTED_DATE = new Date(Date.parse(DATE_STRING));
+
+          const newSelectedDate = new Date(
+            CURRENT_SELECTED_DATE.setMonth(CURRENT_SELECTED_DATE.getMonth() + 2)
+          );
+
+          const NEW_SELECTED_DATE = newSelectedDate.getDate();
+          const NEW_SELECTED_MONTH = newSelectedDate.getMonth();
+          const NEW_SELECTED_YEAR = newSelectedDate.getFullYear();
+
+          return dispatch(
+            setSelectedDate({
+              SELECTED_DATE: NEW_SELECTED_DATE,
+              SELECTED_MONTH: NEW_SELECTED_MONTH,
+              SELECTED_YEAR: NEW_SELECTED_YEAR,
+            })
+          );
+        }
 
         return dispatch(
           setSelectedDate({
-            SELECTED_DATE: NEW_SELECTED_DATE,
-            SELECTED_MONTH: NEW_SELECTED_MONTH,
-            SELECTED_YEAR: NEW_SELECTED_YEAR,
+            SELECTED_DATE: CURRENT_DATE,
+            SELECTED_MONTH: CURRENT_MONTH,
+            SELECTED_YEAR: CURRENT_YEAR,
           })
         );
-      }
-
-      if (dir === "next") {
-        const DATE_STRING = `${SELECTED_YEAR}-${SELECTED_MONTH}-${SELECTED_DATE}`;
-
-        const CURRENT_SELECTED_DATE = new Date(Date.parse(DATE_STRING));
-
-        const newSelectedDate = new Date(
-          CURRENT_SELECTED_DATE.setMonth(CURRENT_SELECTED_DATE.getMonth() + 2)
-        );
-
-        const NEW_SELECTED_DATE = newSelectedDate.getDate();
-        const NEW_SELECTED_MONTH = newSelectedDate.getMonth();
-        const NEW_SELECTED_YEAR = newSelectedDate.getFullYear();
+      } else {
+        if (!date) return handleSelectedDateChange("today");
 
         return dispatch(
           setSelectedDate({
-            SELECTED_DATE: NEW_SELECTED_DATE,
-            SELECTED_MONTH: NEW_SELECTED_MONTH,
-            SELECTED_YEAR: NEW_SELECTED_YEAR,
+            SELECTED_DATE: 1,
+            SELECTED_MONTH: parseInt(date.split("/")[0]),
+            SELECTED_YEAR: parseInt(date.split("/")[1]),
           })
         );
       }
-
-      return dispatch(
-        setSelectedDate({
-          SELECTED_DATE: CURRENT_DATE,
-          SELECTED_MONTH: CURRENT_MONTH,
-          SELECTED_YEAR: CURRENT_YEAR,
-        })
-      );
     },
     [
       CURRENT_DATE,

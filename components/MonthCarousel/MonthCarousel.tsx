@@ -46,6 +46,7 @@ const { width: WINDOW_WIDTH } = Dimensions.get("window");
 
 export const MonthCarousel: FC<BottomTabScreenProps<TabProps>> = ({
   navigation,
+  route: { params },
 }) => {
   const dispatch = useAppDispatch();
 
@@ -317,6 +318,37 @@ export const MonthCarousel: FC<BottomTabScreenProps<TabProps>> = ({
   }, [navigation, SELECTED_MONTH, SELECTED_YEAR]);
 
   useEffect(() => {
+    db.transaction((tx) => {
+      // console.log(
+      //   `Looking up table data for ${SELECTED_MONTH}/${SELECTED_YEAR}...`
+      // );
+
+      tx.executeSql(
+        `
+        SELECT * FROM dayTracker
+        WHERE monthId = ?
+        `,
+        [`${SELECTED_MONTH}/${SELECTED_YEAR}`],
+        (_, { rows: { _array } }) => {
+          const parsedMonthData = _array.map((record) => ({
+            ...record,
+            hoursWorked: JSON.parse(record.hoursWorked),
+            hourlyRate: JSON.parse(record.hourlyRate),
+          })) as {
+            dayId: string;
+            monthId: string;
+            hoursWorked: number[];
+            hourlyRate: number[];
+            comment: string;
+          }[];
+
+          dispatch(setDbMonthData(parsedMonthData));
+        }
+      );
+    });
+  }, [SELECTED_MONTH, SELECTED_YEAR]);
+
+  useEffect(() => {
     if (!!touchedDateInformation) {
       const targetDate = dbMonthData.find(
         (record) =>
@@ -339,6 +371,12 @@ export const MonthCarousel: FC<BottomTabScreenProps<TabProps>> = ({
       }
     }
   }, [dbMonthData, touchedDateInformation]);
+
+  useEffect(() => {
+    if (!!params) {
+      handleSelectedDateChange("date", params.monthId);
+    }
+  }, [params]);
 
   if (!!isLoading)
     return (

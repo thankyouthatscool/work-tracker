@@ -254,7 +254,7 @@ export const MonthSummary = () => {
                     }}
                   >
                     {Math.round((totalHoursWorked / dbMonthData.length) * 100) /
-                      100}
+                      100 || 0}
                   </Text>
                   {") "}
                   (optimal{" "}
@@ -375,7 +375,7 @@ export const MonthSummary = () => {
                         NUMBER_OF_WEEKDAYS_IN_THE_MONTH) /
                         NUMBER_OF_WEEKDAYS_IN_THE_MONTH) *
                         100
-                    ) / 100}
+                    ) / 100 || 0}
                     )
                   </Text>
                 </Text>

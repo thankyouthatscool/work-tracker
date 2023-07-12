@@ -1,5 +1,7 @@
+// import { useFocusEffect } from "@/react-navigation/native";
+import type { BottomTabScreenProps } from "@react-navigation/bottom-tabs";
 import * as Haptics from "expo-haptics";
-import { useCallback, useEffect, useState } from "react";
+import { FC, useCallback, useEffect, useState } from "react";
 import { Dimensions, Pressable, View } from "react-native";
 import {
   Button,
@@ -38,9 +40,13 @@ import {
   MonthCarouselWrapper,
 } from "./Styled";
 
+import { TabProps } from "../AppRoot";
+
 const { width: WINDOW_WIDTH } = Dimensions.get("window");
 
-export const MonthCarousel = () => {
+export const MonthCarousel: FC<BottomTabScreenProps<TabProps>> = ({
+  navigation,
+}) => {
   const dispatch = useAppDispatch();
 
   const { handleSelectedDateChange } = useSelectedMonth();
@@ -274,35 +280,41 @@ export const MonthCarousel = () => {
   }, [SELECTED_MONTH, SELECTED_YEAR]);
 
   useEffect(() => {
-    db.transaction((tx) => {
-      // console.log(
-      //   `Looking up table data for ${SELECTED_MONTH}/${SELECTED_YEAR}...`
-      // );
+    const focusListenerUnsubscribe = navigation.addListener("focus", () => {
+      db.transaction((tx) => {
+        // console.log(
+        //   `Looking up table data for ${SELECTED_MONTH}/${SELECTED_YEAR}...`
+        // );
 
-      tx.executeSql(
-        `
-        SELECT * FROM dayTracker
-        WHERE monthId = ?
-        `,
-        [`${SELECTED_MONTH}/${SELECTED_YEAR}`],
-        (_, { rows: { _array } }) => {
-          const parsedMonthData = _array.map((record) => ({
-            ...record,
-            hoursWorked: JSON.parse(record.hoursWorked),
-            hourlyRate: JSON.parse(record.hourlyRate),
-          })) as {
-            dayId: string;
-            monthId: string;
-            hoursWorked: number[];
-            hourlyRate: number[];
-            comment: string;
-          }[];
+        tx.executeSql(
+          `
+          SELECT * FROM dayTracker
+          WHERE monthId = ?
+          `,
+          [`${SELECTED_MONTH}/${SELECTED_YEAR}`],
+          (_, { rows: { _array } }) => {
+            const parsedMonthData = _array.map((record) => ({
+              ...record,
+              hoursWorked: JSON.parse(record.hoursWorked),
+              hourlyRate: JSON.parse(record.hourlyRate),
+            })) as {
+              dayId: string;
+              monthId: string;
+              hoursWorked: number[];
+              hourlyRate: number[];
+              comment: string;
+            }[];
 
-          dispatch(setDbMonthData(parsedMonthData));
-        }
-      );
+            dispatch(setDbMonthData(parsedMonthData));
+          }
+        );
+      });
     });
-  }, [SELECTED_MONTH, SELECTED_YEAR]);
+
+    return () => {
+      focusListenerUnsubscribe();
+    };
+  }, [navigation, SELECTED_MONTH, SELECTED_YEAR]);
 
   useEffect(() => {
     if (!!touchedDateInformation) {
@@ -707,6 +719,12 @@ export const MonthCarousel = () => {
         </Portal>
         <Portal>
           <Snackbar
+            action={{
+              label: "Dismiss",
+              onPress: () => {
+                setIsSnackbarVisible(() => false);
+              },
+            }}
             duration={1500}
             onDismiss={() => {
               setIsSnackbarVisible(() => false);

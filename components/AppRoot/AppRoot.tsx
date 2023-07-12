@@ -12,10 +12,12 @@ import { createDefaultTableSQLString, dropDefaultTableSQLString } from "@utils";
 import { colors } from "@theme";
 import { loadAppDefaults } from "@utils";
 
-const Tab = createBottomTabNavigator<{
+export type TabProps = {
   MonthCarousel: undefined;
   Settings: undefined;
-}>();
+};
+
+const Tab = createBottomTabNavigator<TabProps>();
 
 export const AppRoot = () => {
   const dispatch = useAppDispatch();
@@ -32,11 +34,9 @@ export const AppRoot = () => {
         console.log(code, message);
       },
       async () => {
-        const def = await loadAppDefaults();
+        const DEFAULTS = await loadAppDefaults();
 
-        console.log(def);
-
-        if (!!def) dispatch(setAppSettingDefaults(def));
+        if (!!DEFAULTS) dispatch(setAppSettingDefaults(DEFAULTS));
 
         dispatch(setIsLoading(false));
       }
@@ -50,7 +50,7 @@ export const AppRoot = () => {
   return (
     <View style={{ flex: 1, width: "100%" }}>
       <Tab.Navigator
-        initialRouteName="MonthCarousel"
+        initialRouteName="Settings"
         screenOptions={{ headerShown: false, tabBarShowLabel: false }}
       >
         <Tab.Screen

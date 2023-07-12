@@ -9,6 +9,7 @@ import {
 import {
   AppSettingsDefaults,
   AppState,
+  CurrentDateInformation,
   DbMonthData,
   SelectedDateInformation,
   TouchedDateInformation,
@@ -73,6 +74,14 @@ export const appSlice = createSlice({
       state.isLoading = payload;
     },
 
+    // Current date
+    setCurrentDateInformation: (
+      state,
+      { payload }: PayloadAction<CurrentDateInformation>
+    ) => {
+      state.currentDateInformation = payload;
+    },
+
     // Selected date
     setSelectedDate: (
       state,
@@ -106,6 +115,9 @@ export const appSlice = createSlice({
 
 export const {
   setIsLoading,
+  // CUrrent date
+  setCurrentDateInformation,
+
   setSelectedDate,
   setTouchedDateInformation,
 

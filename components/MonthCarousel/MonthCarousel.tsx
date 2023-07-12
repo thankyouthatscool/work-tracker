@@ -16,7 +16,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { MonthSummary } from "@components/MonthSummary";
 import { TRANSLATION_X_THRESHOLD, VELOCITY_X_THRESHOLD } from "@constants";
-import { useAppDispatch, useAppSelector } from "@hooks";
+import { useAppDispatch, useAppSelector, useSelectedMonth } from "@hooks";
 import {
   setDbMonthData,
   setSelectedDate,
@@ -42,6 +42,8 @@ const { width: WINDOW_WIDTH } = Dimensions.get("window");
 
 export const MonthCarousel = () => {
   const dispatch = useAppDispatch();
+
+  const { handleSelectedDateChange } = useSelectedMonth();
 
   const {
     appSettings: {
@@ -97,70 +99,6 @@ export const MonthCarousel = () => {
 
     dispatch(setTouchedDateInformation(null));
   }, []);
-
-  const handleSelectedDateChange = useCallback(
-    (dir: "prev" | "previous" | "next" | "today") => {
-      if (dir === "prev" || dir === "previous") {
-        const DATE_STRING = `${SELECTED_YEAR}-${SELECTED_MONTH}-${SELECTED_DATE}`;
-
-        const CURRENT_SELECTED_DATE = new Date(Date.parse(DATE_STRING));
-
-        const newSelectedDate = new Date(
-          CURRENT_SELECTED_DATE.setMonth(CURRENT_SELECTED_DATE.getMonth())
-        );
-
-        const NEW_SELECTED_DATE = newSelectedDate.getDate();
-        const NEW_SELECTED_MONTH = newSelectedDate.getMonth();
-        const NEW_SELECTED_YEAR = newSelectedDate.getFullYear();
-
-        return dispatch(
-          setSelectedDate({
-            SELECTED_DATE: NEW_SELECTED_DATE,
-            SELECTED_MONTH: NEW_SELECTED_MONTH,
-            SELECTED_YEAR: NEW_SELECTED_YEAR,
-          })
-        );
-      }
-
-      if (dir === "next") {
-        const DATE_STRING = `${SELECTED_YEAR}-${SELECTED_MONTH}-${SELECTED_DATE}`;
-
-        const CURRENT_SELECTED_DATE = new Date(Date.parse(DATE_STRING));
-
-        const newSelectedDate = new Date(
-          CURRENT_SELECTED_DATE.setMonth(CURRENT_SELECTED_DATE.getMonth() + 2)
-        );
-
-        const NEW_SELECTED_DATE = newSelectedDate.getDate();
-        const NEW_SELECTED_MONTH = newSelectedDate.getMonth();
-        const NEW_SELECTED_YEAR = newSelectedDate.getFullYear();
-
-        return dispatch(
-          setSelectedDate({
-            SELECTED_DATE: NEW_SELECTED_DATE,
-            SELECTED_MONTH: NEW_SELECTED_MONTH,
-            SELECTED_YEAR: NEW_SELECTED_YEAR,
-          })
-        );
-      }
-
-      return dispatch(
-        setSelectedDate({
-          SELECTED_DATE: CURRENT_DATE,
-          SELECTED_MONTH: CURRENT_MONTH,
-          SELECTED_YEAR: CURRENT_YEAR,
-        })
-      );
-    },
-    [
-      CURRENT_DATE,
-      CURRENT_MONTH,
-      CURRENT_YEAR,
-      SELECTED_DATE,
-      SELECTED_MONTH,
-      SELECTED_YEAR,
-    ]
-  );
 
   const handleInsertData = useCallback(
     (hoursWorked: number[], hourlyRate: number[], comment: string) => {

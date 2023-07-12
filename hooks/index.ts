@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 
-import { setSelectedDate } from "@store/appSlice";
+import { setCurrentDateInformation, setSelectedDate } from "@store/appSlice";
 import { useAppDispatch, useAppSelector } from "@store/hooks";
 
 export * from "@store/hooks";
@@ -13,8 +13,55 @@ export const useSelectedMonth = () => {
     selectedDateInformation: { SELECTED_YEAR, SELECTED_MONTH, SELECTED_DATE },
   } = useAppSelector(({ app }) => app);
 
+  const checkCurrentDate = useCallback(() => {
+    console.log(
+      "Checking the current date to make sure that it is not outdated yet."
+    );
+
+    const dateInstance = new Date();
+
+    const NEW_CURRENT_YEAR = dateInstance.getFullYear();
+    const NEW_CURRENT_MONTH = dateInstance.getMonth();
+    const NEW_CURRENT_DATE = dateInstance.getDate();
+    const NEW_CURRENT_WEEK_DAY = dateInstance.getDay();
+    const NEW_CURRENT_MONTH_NUMBER_OF_DAYS = new Date(
+      NEW_CURRENT_YEAR,
+      NEW_CURRENT_MONTH + 1,
+      0
+    ).getDate();
+    const NEW_CURRENT_MONTH_FIRST_DAY = new Date(
+      NEW_CURRENT_YEAR,
+      NEW_CURRENT_MONTH,
+      0
+    ).getDay();
+    const NEW_CURRENT_MONTH_LAST_DAY = new Date(
+      NEW_CURRENT_YEAR,
+      NEW_CURRENT_MONTH,
+      NEW_CURRENT_MONTH_NUMBER_OF_DAYS - 1
+    ).getDay();
+
+    if (
+      `${NEW_CURRENT_DATE}/${NEW_CURRENT_MONTH}/${NEW_CURRENT_YEAR}` !==
+      `${CURRENT_DATE}/${CURRENT_MONTH}/${CURRENT_YEAR}`
+    ) {
+      dispatch(
+        setCurrentDateInformation({
+          CURRENT_DATE: NEW_CURRENT_DATE,
+          CURRENT_MONTH: NEW_CURRENT_MONTH,
+          CURRENT_YEAR: NEW_CURRENT_YEAR,
+          CURRENT_MONTH_NUMBER_OF_DAYS: NEW_CURRENT_MONTH_NUMBER_OF_DAYS,
+          CURRENT_WEEK_DAY: NEW_CURRENT_WEEK_DAY,
+          CURRENT_MONTH_FIRST_DAY: NEW_CURRENT_MONTH_FIRST_DAY,
+          CURRENT_MONTH_LAST_DAY: NEW_CURRENT_MONTH_LAST_DAY,
+        })
+      );
+    }
+  }, [CURRENT_DATE, CURRENT_MONTH, CURRENT_YEAR]);
+
   const handleSelectedDateChange = useCallback(
     (dir: "prev" | "previous" | "next" | "today") => {
+      checkCurrentDate();
+
       if (dir === "prev" || dir === "previous") {
         const DATE_STRING = `${SELECTED_YEAR}-${SELECTED_MONTH}-${SELECTED_DATE}`;
 

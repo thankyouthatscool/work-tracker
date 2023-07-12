@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import { ScrollView, View } from "react-native";
 import { Button, Text, TextInput } from "react-native-paper";
@@ -16,12 +16,17 @@ type LocalAppDefaultsInputs = {
   defaultComment: string;
 };
 
+type MonthData = { availableMonth: string; numberOfRecords: number };
+
 export const SettingsScreen = () => {
   const dispatch = useAppDispatch();
 
-  const { appSettings } = useAppSelector(({ app }) => app);
+  const { appSettings, databaseInstance: db } = useAppSelector(
+    ({ app }) => app
+  );
 
   const [isSaveNeeded, setIsSaveNeeded] = useState<boolean>(false);
+  const [availableMonthData, setAvailableMonthData] = useState<MonthData[]>([]);
 
   const { control, handleSubmit } = useForm<LocalAppDefaultsInputs>({
     defaultValues: {
@@ -46,10 +51,30 @@ export const SettingsScreen = () => {
 
     dispatch(setAppSettingDefaults(parsedData));
   };
-  ``;
+
+  const handleLoadAvailableMonths = useCallback(() => {
+    db.transaction(
+      (tx) => {
+        tx.executeSql(
+          `
+            SELECT DISTINCT (monthId) as availableMonth, COUNT(*) as 'numberOfRecords'
+            FROM dayTracker
+            GROUP BY monthId
+        `,
+          [],
+          (_, { rows: { _array } }) => {
+            setAvailableMonthData(() => _array);
+          }
+        );
+      },
+      (err) => {},
+      () => {}
+    );
+  }, []);
+
   useEffect(() => {
-    console.log(appSettings);
-  }, [appSettings]);
+    handleLoadAvailableMonths();
+  }, []);
 
   return (
     <SafeAreaView
@@ -126,6 +151,19 @@ export const SettingsScreen = () => {
             />
           )}
         />
+        <Text style={{ color: colors.walledGreen }} variant="titleLarge">
+          Database
+        </Text>
+        <Text style={{ color: colors.artisanGold }} variant="titleMedium">
+          Available Mont Data
+        </Text>
+        <View>
+          {availableMonthData.map((month) => (
+            <Text key={month.availableMonth}>
+              {month.availableMonth} - {month.numberOfRecords}
+            </Text>
+          ))}
+        </View>
       </ScrollView>
       <View
         style={{

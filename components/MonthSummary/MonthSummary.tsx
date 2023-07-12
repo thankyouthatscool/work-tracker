@@ -41,7 +41,6 @@ export const MonthSummary = () => {
     )
   );
 
-  // TODO: Selected month information
   const [isSelectedMonthCurrent, setIsSelectedMonthCurrent] = useState(false);
   const [isSelectedMonthPast, setIsSelectedMonthPast] = useState(false);
   const [isSelectedMonthFuture, setIsSelectedMonthFuture] = useState(false);

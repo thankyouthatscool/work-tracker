@@ -1,14 +1,17 @@
 import * as FileSystem from "expo-file-system";
 import * as IntentLauncher from "expo-intent-launcher";
 import * as MediaLibrary from "expo-media-library";
-import { useCallback } from "react";
-import { Button, Card, Text } from "react-native-paper";
+import { useCallback, useState } from "react";
+import { View } from "react-native";
+import { Button, Card, Portal, Snackbar, Text } from "react-native-paper";
 
 import { useAppSelector } from "@hooks";
 import { APP_PADDING, colors } from "@theme";
 
 export const BackupCard = () => {
   const { databaseInstance: db } = useAppSelector(({ app }) => app);
+
+  const [isSnackbarVisible, setIsSnackbarVisible] = useState<boolean>(false);
 
   const handleBackupData = useCallback(async () => {
     const { granted } = await MediaLibrary.requestPermissionsAsync();
@@ -72,31 +75,52 @@ export const BackupCard = () => {
         },
         (err) => {}
       );
+    } else {
+      setIsSnackbarVisible(() => true);
     }
   }, []);
 
   return (
-    <Card
-      style={{
-        alignItems: "flex-start",
-        margin: APP_PADDING / 2,
-      }}
-    >
-      <Card.Content>
-        <Text style={{ color: colors.walledGreen }} variant="titleLarge">
-          Backup
-        </Text>
-        <Button
-          icon="download-box"
-          onPress={() => {
-            handleBackupData();
+    <View>
+      <Card
+        style={{
+          alignItems: "flex-start",
+          margin: APP_PADDING / 2,
+          marginTop: 0,
+        }}
+      >
+        <Card.Content>
+          <Text style={{ color: colors.walledGreen }} variant="titleLarge">
+            Backup
+          </Text>
+          <Button
+            icon="download-box"
+            onPress={() => {
+              handleBackupData();
+            }}
+            mode="contained"
+          >
+            <Text style={{ color: "white", fontWeight: "bold" }}>
+              Backup All
+            </Text>
+          </Button>
+        </Card.Content>
+      </Card>
+      <Portal>
+        <Snackbar
+          action={{
+            label: "Dismiss",
+            onPress: () => {
+              setIsSnackbarVisible(() => false);
+            },
           }}
-          mode="contained"
+          visible={isSnackbarVisible}
+          onDismiss={() => setIsSnackbarVisible(() => false)}
         >
-          <Text style={{ color: "white", fontWeight: "bold" }}>Backup All</Text>
-        </Button>
-      </Card.Content>
-    </Card>
+          Need permissions to create local backups.
+        </Snackbar>
+      </Portal>
+    </View>
   );
 };
 

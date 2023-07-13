@@ -123,6 +123,3 @@ export const BackupCard = () => {
     </View>
   );
 };
-
-// await FileSystem.writeAsStringAsync(fileUri, "Hello World", { encoding: FileSystem.EncodingType.UTF8 });
-// const asset = await MediaLibrary.createAssetAsync(fileUri)

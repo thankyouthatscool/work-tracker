@@ -13,6 +13,7 @@ import { setAppSettingDefaults } from "@store";
 import { APP_PADDING, colors } from "@theme";
 import { setAppDefaults as setAppDefaultsLS, getMonthName } from "@utils";
 
+import { BackupCard } from "./components/BackupCard";
 import type { TabProps } from "../AppRoot";
 
 type LocalAppDefaultsInputs = {
@@ -282,13 +283,7 @@ export const SettingsScreen: FC<BottomTabScreenProps<TabProps, "Settings">> = ({
             </View>
           </Card.Content>
         </Card>
-        <Card style={{ margin: APP_PADDING / 2 }}>
-          <Card.Content>
-            <Text style={{ color: colors.walledGreen }} variant="titleLarge">
-              Backup
-            </Text>
-          </Card.Content>
-        </Card>
+        <BackupCard />
       </ScrollView>
       <View
         style={{

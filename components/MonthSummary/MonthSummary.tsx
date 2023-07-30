@@ -3,11 +3,7 @@ import { useEffect, useState } from "react";
 import { Pressable, View } from "react-native";
 import { IconButton, Text } from "react-native-paper";
 
-import {
-  DEFAULT_HOURS_WORKED,
-  DEFAULT_HOURLY_RATE,
-  HIGH_DISTINCTION_THRESHOLD,
-} from "@constants";
+import { HIGH_DISTINCTION_THRESHOLD } from "@constants";
 import { useAppSelector, useSelectedMonth } from "@hooks";
 import { APP_PADDING, colors } from "@theme";
 import {
@@ -25,6 +21,14 @@ import {
 export const MonthSummary = () => {
   const { currentDateInformation, dbMonthData, selectedDateInformation } =
     useAppSelector(({ app }) => app);
+  const {
+    appSettings: {
+      appSettingsDefaults: {
+        defaultHourlyRate: DEFAULT_HOURLY_RATE,
+        defaultHoursWorked: DEFAULT_HOURS_WORKED,
+      },
+    },
+  } = useAppSelector(({ app }) => app);
 
   const { handleSelectedDateChange } = useSelectedMonth();
 
@@ -163,7 +167,7 @@ export const MonthSummary = () => {
           }}
         />
       </View>
-      {isExpanded && (
+      {!!isExpanded && (
         <View>
           {!!isSelectedMonthCurrent ? (
             <CurrentMonthSummaryWrapper>
